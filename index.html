@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Un Universo Para Ti 💖</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💖</text></svg>">
+    <meta name="description" content="Un universo espacial 3D interactivo dedicado al amor con planeta brillante, anillos de neón, estrellas y miles de frases románticas flotando.">
+    <meta name="theme-color" content="#03010b">
+
+    <!-- Fuentes elegantes Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Great+Vibes&family=Montserrat:wght@300;400;500;600;700&family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
+
+    <!-- Estilos de la aplicación -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Contenedor 3D Three.js -->
+    <div id="canvas-container"></div>
+
+    <!-- Encabezado sutil superior -->
+    <header class="header-overlay">
+        <h1 class="universe-title">Un Universo Para Ti</h1>
+        <p class="universe-subtitle">Dedicado a <span id="recipient-name" class="recipient-highlight">Mi Amor Eterno</span></p>
+    </header>
+
+    <!-- Indicador de interacción para el usuario -->
+    <div class="hint-badge" id="hint-badge">
+        ✨ Arrastra para explorar • Toca las frases y estrellas
+    </div>
+
+    <!-- Popover interactivo al seleccionar una frase -->
+    <div class="phrase-bubble" id="phrase-bubble">
+        <div class="phrase-bubble-text" id="phrase-bubble-text">Te amo 💖</div>
+        <div class="phrase-bubble-hint">Un pensamiento flotando en el infinito</div>
+    </div>
+
+    <!-- Barra de herramientas flotante inferior (Dock) -->
+    <nav class="control-dock" aria-label="Controles del universo">
+        <!-- Música Ambiental -->
+        <button class="dock-btn" id="btn-music" title="Activar/Desactivar Música">
+            <div class="sound-bars" id="music-indicator">
+                <div class="sound-bar"></div>
+                <div class="sound-bar"></div>
+                <div class="sound-bar"></div>
+            </div>
+            <span>Música</span>
+        </button>
+
+        <!-- Pausar / Reanudar -->
+        <button class="dock-btn" id="btn-pause" title="Pausar o Reanudar Movimiento">
+            <svg id="pause-icon" viewBox="0 0 24 24">
+                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+            </svg>
+            <svg id="play-icon" viewBox="0 0 24 24" style="display: none;">
+                <path d="M8 5v14l11-7z"/>
+            </svg>
+            <span id="pause-text">Pausar</span>
+        </button>
+
+        <!-- Carta de Amor -->
+        <button class="dock-btn" id="btn-letter" title="Leer Carta de Amor">
+            <svg viewBox="0 0 24 24">
+                <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+            </svg>
+            <span>Carta</span>
+        </button>
+
+        <!-- Centrar Vista -->
+        <button class="dock-btn" id="btn-reset-cam" title="Restablecer Posición de Cámara">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+            </svg>
+            <span>Centrar</span>
+        </button>
+
+        <!-- Personalizar / Ajustes -->
+        <button class="dock-btn" id="btn-settings" title="Personalizar el Universo">
+            <svg viewBox="0 0 24 24">
+                <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+            </svg>
+            <span>Ajustes</span>
+        </button>
+
+        <!-- Pantalla Completa -->
+        <button class="dock-btn" id="btn-fullscreen" title="Pantalla Completa">
+            <svg viewBox="0 0 24 24">
+                <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+            </svg>
+        </button>
+    </nav>
+
+    <!-- Modal: Carta de Amor Personalizada -->
+    <div class="modal-overlay" id="letter-modal">
+        <div class="love-letter-card">
+            <button class="close-modal-btn" id="close-letter-btn" aria-label="Cerrar">&times;</button>
+            <div class="card-seal">💌</div>
+            <h2 class="letter-title" id="letter-modal-title">Para la dueña de mi universo</h2>
+            <div class="letter-body" id="letter-modal-body">
+                <!-- Se llena dinámicamente desde config.js -->
+            </div>
+            <div class="letter-signature" id="letter-modal-signature">Tuyo por siempre</div>
+        </div>
+    </div>
+
+    <!-- Panel lateral (Drawer) de Configuración y Personalización -->
+    <aside class="settings-drawer" id="settings-drawer" aria-label="Ajustes">
+        <div class="drawer-header">
+            <h3 class="drawer-title">Personalización</h3>
+            <button class="close-drawer-btn" id="close-drawer-btn" aria-label="Cerrar Ajustes">&times;</button>
+        </div>
+
+        <div class="drawer-content">
+            <!-- Sección: Añadir Frase Personalizada -->
+            <div class="drawer-section">
+                <label class="section-label">Lanzar Pensamiento al Espacio</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="input-new-phrase" class="custom-input" placeholder="Escribe tu mensaje de amor..." maxlength="45">
+                    <button id="btn-add-phrase" class="btn-primary-action" style="white-space: nowrap;">Lanzar 🚀</button>
+                </div>
+            </div>
+
+            <!-- Sección: Dedicatoria -->
+            <div class="drawer-section">
+                <label class="section-label">Dedicatoria Personal</label>
+                <div class="setting-item">
+                    <div class="setting-row"><span>Nombre de tu pareja:</span></div>
+                    <input type="text" id="input-recipient" class="custom-input" value="Mi Amor Eterno">
+                </div>
+                <div class="setting-item">
+                    <div class="setting-row"><span>Tu firma:</span></div>
+                    <input type="text" id="input-sender" class="custom-input" value="Tuyo por Siempre">
+                </div>
+            </div>
+
+            <!-- Sección: Paletas de Colores -->
+            <div class="drawer-section">
+                <label class="section-label">Paleta de Colores</label>
+                <div class="theme-grid">
+                    <div class="theme-card active" data-theme="pink">
+                        <div class="theme-swatch" style="background: linear-gradient(135deg, #ff2a8d, #ff80bf);"></div>
+                        <span>Rosa Neón</span>
+                    </div>
+                    <div class="theme-card" data-theme="violet">
+                        <div class="theme-swatch" style="background: linear-gradient(135deg, #9b30ff, #e066ff);"></div>
+                        <span>Violeta Místico</span>
+                    </div>
+                    <div class="theme-card" data-theme="crimson">
+                        <div class="theme-swatch" style="background: linear-gradient(135deg, #ff0844, #ffb199);"></div>
+                        <span>Fuego Pasión</span>
+                    </div>
+                    <div class="theme-card" data-theme="cyan">
+                        <div class="theme-swatch" style="background: linear-gradient(135deg, #00f2fe, #4facfe);"></div>
+                        <span>Cielo Estelar</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección: Velocidades y Tamaños -->
+            <div class="drawer-section">
+                <label class="section-label">Velocidades y Escala</label>
+                
+                <div class="setting-item">
+                    <div class="setting-row">
+                        <span>Giro del Planeta</span>
+                        <span id="label-speed-planet">Normal</span>
+                    </div>
+                    <input type="range" id="slider-speed-planet" min="0" max="0.015" step="0.0005" value="0.0035">
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-row">
+                        <span>Velocidad de Anillos</span>
+                        <span id="label-speed-rings">1.0x</span>
+                    </div>
+                    <input type="range" id="slider-speed-rings" min="0" max="3" step="0.1" value="1.0">
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-row">
+                        <span>Tamaño del Planeta</span>
+                        <span id="label-size-planet">13.5</span>
+                    </div>
+                    <input type="range" id="slider-size-planet" min="8" max="22" step="0.5" value="13.5">
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-row">
+                        <span>Brillo y Resplandor (Bloom)</span>
+                        <span id="label-bloom">1.5</span>
+                    </div>
+                    <input type="range" id="slider-bloom" min="0" max="3.0" step="0.1" value="1.5">
+                </div>
+            </div>
+
+            <!-- Sección: Audio y Canción Propia -->
+            <div class="drawer-section">
+                <label class="section-label">Música Personalizada</label>
+                <div class="setting-item">
+                    <div class="setting-row"><span>Cargar canción (MP3/WAV):</span></div>
+                    <input type="file" id="input-audio-file" accept="audio/*" class="custom-input" style="padding: 6px;">
+                </div>
+                <div class="setting-item">
+                    <div class="setting-row"><span>Volumen:</span><span id="label-volume">50%</span></div>
+                    <input type="range" id="slider-volume" min="0" max="1" step="0.05" value="0.5">
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ==========================================================================
+         LIBRERÍAS THREE.JS & POSTPROCESAMIENTO (Carga Modular)
+         ========================================================================== -->
+    <script src="libs/three.min.js"></script>
+    <script src="libs/OrbitControls.js"></script>
+    <script src="libs/EffectComposer.js"></script>
+    <script src="libs/RenderPass.js"></script>
+    <script src="libs/CopyShader.js"></script>
+    <script src="libs/ShaderPass.js"></script>
+    <script src="libs/LuminosityHighPassShader.js"></script>
+    <script src="libs/UnrealBloomPass.js"></script>
+
+    <!-- MÓDULOS DE LA APLICACIÓN -->
+    <script src="js/config.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/planet.js"></script>
+    <script src="js/rings.js"></script>
+    <script src="js/stars.js"></script>
+    <script src="js/particles.js"></script>
+    <script src="js/phrases.js"></script>
+    <script src="js/scene.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
