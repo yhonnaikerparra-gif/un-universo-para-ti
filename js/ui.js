@@ -125,15 +125,19 @@ class RomanticUI {
         });
 
         // 5. Drawer de Ajustes
-        this.btnSettings.addEventListener('click', () => {
-            this.settingsDrawer.classList.toggle('active');
-            this.btnSettings.classList.toggle('active');
-        });
+        if (this.btnSettings && this.settingsDrawer) {
+            this.btnSettings.addEventListener('click', () => {
+                this.settingsDrawer.classList.toggle('active');
+                this.btnSettings.classList.toggle('active');
+            });
+        }
 
-        this.closeSettingsBtn.addEventListener('click', () => {
-            this.settingsDrawer.classList.remove('active');
-            this.btnSettings.classList.remove('active');
-        });
+        if (this.closeSettingsBtn && this.settingsDrawer) {
+            this.closeSettingsBtn.addEventListener('click', () => {
+                this.settingsDrawer.classList.remove('active');
+                if (this.btnSettings) this.btnSettings.classList.remove('active');
+            });
+        }
 
         // 6. Pantalla Completa
         this.btnFullscreen.addEventListener('click', () => {
